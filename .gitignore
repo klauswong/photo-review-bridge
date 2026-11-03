@@ -1,0 +1,38 @@
+# Dependencies and OS/editor artifacts
+node_modules/
+.DS_Store
+*.log
+*.swp
+*.swo
+
+# Local credentials and browser authentication
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+auth/
+.auth/
+private/
+.private/
+profiles/
+*browser-profile*/
+playwright/.auth/
+*settings.local.json
+*auth.local.json
+*storage-state*.json
+*storageState*.json
+*cookies*.json
+
+# Private review exports, browser captures and local test artifacts
+photo-review-backup*.json
+*.har
+artifacts/
+test-results/
+playwright-report/
+
+# Locally built distribution archives
+*.zip
+*.crx

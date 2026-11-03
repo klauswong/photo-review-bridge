@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Photo Review Bridge</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header>
+    <div><h1>Photo Review Bridge</h1><p>Lightroom rejects. Google Photos originals. One review album.</p></div>
+    <div class="update-controls"><span class="local"><span id="version"></span> · Stored on this browser</span><button id="reload-extension" class="quiet" title="Reloads local updates and keeps saved decisions. Unconfirmed photo checks must be repeated.">Apply local update</button></div>
+  </header>
+  <main>
+    <p class="notice">Pilot build · Website adapters need a live trial. Start with 5–10 rejects. No photos are uploaded, edited, or deleted.</p>
+    <div id="status" role="status" aria-live="polite">Loading your workspace…</div>
+    <nav class="stage-nav" aria-label="Workflow"><button id="stage-collect" aria-pressed="true">Collect rejects</button><button id="stage-review" class="quiet" aria-pressed="false">Review photos</button></nav>
+    <div class="workspace">
+      <section id="collect-panel" aria-labelledby="collect-title">
+        <h2 id="collect-title">Collect from Lightroom</h2>
+        <p>Open Lightroom’s Photos grid or your search results, then collect the batch here. We select <strong>Rejected</strong> automatically and refresh the view, keeping your current search.</p>
+        <p id="lightroom-selected" class="hint"></p><details id="lightroom-choice"><summary>Choose Lightroom tab</summary><label for="lightroom-tab">Lightroom tab</label>
+        <div class="field-row"><select id="lightroom-tab"><option value="">No Lightroom tab found</option></select><button id="refresh" class="quiet">Refresh tabs</button></div></details>
+        <div class="actions"><button id="capture-batch">Collect rejected photos</button><button id="stop" class="quiet" disabled>Stop</button></div>
+        <div id="collect-list-slot"></div>
+        <div id="collected" class="recovery" hidden><p id="collected-count"></p><button id="continue-review">Continue to Google Photos</button></div>
+        <details id="collection-options"><summary>More collection options</summary><p>If batch collection fails, open one rejected photo and its Info panel, then read its visible filename here. Dates still need manual comparison.</p>
+        <label class="check"><input type="checkbox" id="rejects-only">For these manual tools, I confirmed this photo or view contains only rejects.</label>
+        <div id="capture-help" class="recovery" hidden><h3>Read the filename directly</h3><p>Confirm the photo is a reject above, then click its filename text in Lightroom’s Info panel.</p><button id="lr-pick">Choose filename in Lightroom</button></div>
+        <button id="capture" class="quiet">Read visible Lightroom filenames</button><button id="scan" class="quiet">Read visible names while scrolling</button>
+        <label for="paste-names">Or paste original filenames, one per line</label><textarea id="paste-names" rows="4" placeholder="IMG_1234.JPG"></textarea><button id="paste-import" class="quiet">Add these filenames</button>
+        <p>If the reader still fails, this diagnostic contains counts only, without your filenames or photo content.</p><button id="diagnose" class="quiet">Check Lightroom reader</button><pre id="diagnostics" hidden></pre></details>
+        <p class="hint">Start with one small rejected batch. Previous saved records remain in your list.</p>
+
+        <details><summary>Save or import a filename list</summary>
+        <div class="actions"><button id="export" class="quiet">Export CSV</button><label class="file-button" for="import">Import CSV<input id="import" type="file" accept=".csv,text/csv"></label></div>
+        <p class="hint">The CSV contains filenames, available dates, and Lightroom links. Review it before sharing it with anyone.</p></details>
+      </section>
+      <section id="review-panel" aria-labelledby="match-title" hidden>
+        <h2 id="match-title">Review in Google Photos</h2>
+        <p>Find this photo in Google Photos, then compare it with your Lightroom reject.</p>
+        <p id="google-selected" class="hint"></p><details id="google-choice"><summary>Choose Google Photos tab</summary><label for="google-tab">Google Photos tab</label>
+        <div class="field-row"><select id="google-tab"><option value="">No Google Photos tab found</option></select><button id="refresh-google" class="quiet">Refresh tabs</button></div></details>
+        <div id="current" class="current"><p>Choose a reject from the list to begin.</p></div>
+        <div class="actions"><button id="search">Find this photo</button><button id="read" class="quiet">Check open photo</button></div><details><summary>Cannot read the Google filename?</summary><button id="pick-name" class="quiet">Choose filename in Info</button></details>
+        <p class="hint">If reading cannot identify the Info panel, use Choose filename, then click the filename text in Google Photos. Escape cancels.</p>
+        <div id="candidate" class="candidate" hidden></div>
+        <button id="retry-match" class="quiet" hidden>Wrong photo — try another</button>
+        <div id="comparison"><label class="check"><input id="compared" type="checkbox" disabled>I compared the image and capture date in both apps; this is the same photo.</label>
+        <button id="approve" disabled>Confirm same photo</button></div>
+        <div id="album-step" hidden><hr>
+        <label for="album">Existing private review album</label>
+        <input id="album" type="text" maxlength="150" placeholder="Cleanup — Review before deleting" autocomplete="off">
+        <p class="hint">Create the album in Google Photos first. The extension never changes sharing. Album menu automation currently expects English controls.</p>
+        <div class="actions"><button id="add" disabled>Add open approved photo to album</button><button id="done" class="quiet" disabled>I verified it in the album</button></div>
+        <p class="hint">Album placement is counted only after you verify it. Delete unwanted photos yourself in Google Photos using Move to trash.</p></div>
+        <div class="actions"><button id="next-main" class="quiet">Next photo</button></div>
+      </section>
+    </div>
+    <div id="review-list-slot"><details class="records"><summary>Show filename list</summary><section aria-labelledby="records-title">
+      <div class="list-heading"><div><h2 id="records-title">Your reject list</h2><p id="summary">No rejects collected yet.</p></div><div class="actions"><button id="next" class="quiet">Next unverified</button><button id="reset" class="quiet">Clear local workspace</button></div></div>
+      <label for="filter">Filter filenames</label><input id="filter" type="search" placeholder="Find a filename…">
+      <div class="table-wrap"><table><thead><tr><th scope="col">Original filename</th><th scope="col">Capture date</th><th scope="col">Review</th><th scope="col">Action</th></tr></thead><tbody id="rows"></tbody></table></div>
+      <p id="empty">Read filenames from your rejected Lightroom view, or import a saved CSV.</p>
+      <p id="limit" class="hint"></p>
+    </section></details></div>
+    <details><summary>How this pilot handles your photos</summary><p>Batch collection briefly observes Lightroom’s normal rejected-photo response. It never replays requests or reads account tokens, cookies or hidden app stores. Google Photos search is approximate; the original filename in its Info panel must match exactly, and you approve identity visually. Photos with no readable filename cannot be approved. Adding to an album preserves the existing item; no image metadata is written. Browser-local state and exported manifests can contain private filenames and links.</p><p>The extension has access only to lightroom.adobe.com and photos.google.com. The two sites can change their interfaces; unsupported controls stop the operation. There are no delete or trash operations. A filename-only match is never sufficient for automatic approval.</p></details>
+  </main>
+  <footer>Keep the originals. Carry only the decisions.</footer>
+</body>
+</html>

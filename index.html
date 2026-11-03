@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Photo Review · Google Photos HUD</title>
+  <link rel="stylesheet" href="style.css"><script type="module" src="launcher.js"></script>
+</head>
+<body>
+  <header><div><h1>Photo Review</h1><p>A local review HUD for Google Photos.</p></div><div class="update-controls"><span id="version" class="local"></span><button id="reload-extension" class="quiet">Apply local update</button></div></header>
+  <main>
+    <section style="max-width:680px;margin:24px auto">
+      <h2>Review where your photos already are</h2>
+      <p>Accept, reject and rate photos directly in Google Photos. Your decisions and photo links stay in this browser.</p>
+      <button id="open-google">Open Google Photos HUD</button>
+      <ol><li>Name your local review library. Use a different name for each Google account.</li><li>Open a photo and use Accept, Reject or a 1–5 star rating.</li><li>Return to the grid, choose a review filter and select loaded matches.</li></ol>
+      <p>The HUD only selects photos it can identify and confirm. Unloaded or unsupported items are skipped. No photos are uploaded, moved, edited or deleted.</p>
+      <p>After an update, reload your Google Photos tab once. Older Lightroom review data is preserved separately; this workflow does not use Lightroom.</p>
+      <p id="status" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+</body>
+</html>
