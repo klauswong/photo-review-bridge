@@ -34,6 +34,15 @@
   }
   function validVersion(value){return typeof value==='string'&&/^\d{1,5}(?:\.\d{1,5}){0,3}$/.test(value)&&value.split('.').every(part=>Number(part)<=65535);}
   function newerVersion(candidate,current){if(!validVersion(candidate)||!validVersion(current))return false;const a=candidate.split('.').map(Number),b=current.split('.').map(Number);for(let n=0;n<4;n++){if((a[n]||0)!==(b[n]||0))return (a[n]||0)>(b[n]||0);}return false;}
+  const RESUME_PREFIX='photoReviewHudResumeV1:';
+  const BADGE_KEY='photoReviewHudBadgeV1';
+  function resumeKey(library){return RESUME_PREFIX+encodeURIComponent(libraryName(library));}
+  function resumePoint(raw){
+    const photo=identity(raw?.url);
+    if(!photo||!Number.isFinite(Date.parse(raw.updatedAt)))throw new Error('Invalid resume point.');
+    const url=new URL(raw.url);url.search='';url.hash='';
+    return {id:photo.id,url:url.href,updatedAt:raw.updatedAt};
+  }
   const LIBRARY_PREFIX='photoReviewHudLibraryNameV1:';
   function libraryKey(name){return LIBRARY_PREFIX+encodeURIComponent(libraryName(name));}
   function libraryStamp(records){return JSON.stringify(records.map(r=>[r.id,r.decision,r.stars,r.updatedAt,r.url]).sort((a,b)=>a[0].localeCompare(b[0])));}
@@ -56,5 +65,5 @@
     try{const url=new URL(raw,base);return {scheme:url.protocol,hostname:url.hostname,origin:url.origin};}
     catch{return {scheme:'unknown',hostname:'',origin:''};}
   }
-  globalThis.PhotoReviewHUDCore={PREFIX,identity,libraryName,key,record,matches,OPACITY,validOpacity,validVersion,newerVersion,LIBRARIES_KEY,libraryNames,activeReviews,reviewStamp,LIBRARY_PREFIX,libraryKey,libraryStamp,pinSourceShape};
+  globalThis.PhotoReviewHUDCore={PREFIX,RESUME_PREFIX,BADGE_KEY,resumeKey,resumePoint,identity,libraryName,key,record,matches,OPACITY,validOpacity,validVersion,newerVersion,LIBRARIES_KEY,libraryNames,activeReviews,reviewStamp,LIBRARY_PREFIX,libraryKey,libraryStamp,pinSourceShape};
 })();

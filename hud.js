@@ -4,7 +4,7 @@
   const C=globalThis.PhotoReviewHUDCore;
   const host=document.createElement('div');host.id='photo-review-hud';
   const root=host.attachShadow({mode:'open'});
-  const paths={refresh:'<path d="M20 11a8 8 0 1 0-2 6M20 4v7h-7"/>',settings:'<path d="M3 6h5m4 0h9M3 12h9m4 0h5M3 18h3m4 0h11"/><circle cx="10" cy="6" r="2"/><circle cx="14" cy="12" r="2"/><circle cx="8" cy="18" r="2"/>',check:'<path d="m5 12 4 4L19 6"/>',cross:'<path d="m6 6 12 12M18 6 6 18"/>',star:'<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-2.9-5.6 2.9 1.1-6.2L3 9.6l6.2-.9Z"/>',hide:'<path d="m6 9 6 6 6-6"/>',pin:'<path d="m9 3 6 0-1 6 4 4H6l4-4ZM12 13v8"/>',compare:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/>'};
+  const paths={resume:'<path d="M4 10a8 8 0 1 1 1 9M4 4v6h6M12 7v5l3 2"/>',refresh:'<path d="M20 11a8 8 0 1 0-2 6M20 4v7h-7"/>',settings:'<path d="M3 6h5m4 0h9M3 12h9m4 0h5M3 18h3m4 0h11"/><circle cx="10" cy="6" r="2"/><circle cx="14" cy="12" r="2"/><circle cx="8" cy="18" r="2"/>',check:'<path d="m5 12 4 4L19 6"/>',cross:'<path d="m6 6 12 12M18 6 6 18"/>',star:'<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-2.9-5.6 2.9 1.1-6.2L3 9.6l6.2-.9Z"/>',hide:'<path d="m6 9 6 6 6-6"/>',pin:'<path d="m9 3 6 0-1 6 4 4H6l4-4ZM12 13v8"/>',compare:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/>'};
   const icon=name=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${paths[name]}</svg>`;
   root.innerHTML=`<style>
     :host{all:initial;position:fixed;right:16px;bottom:16px;z-index:2147483646;color-scheme:light dark;font:13px/1.4 system-ui,sans-serif;--surface:255 255 255;--ink:#18261e;--muted:#3e4e43;--line:#9dad9f;--control:#fff;--hover:#edf3ef;--accent:#225b3c;--pressed:#fff;--active-hover:#17472c;--focus:#276bbc;--error:#a02620;--link:#225b3c;--panel-alpha:1;color:var(--ink)}
@@ -12,8 +12,8 @@
     section{width:300px;max-width:calc(100vw - 24px);max-height:calc(100vh - 32px);overflow:auto;background:rgb(var(--surface)/var(--panel-alpha));border:1px solid var(--line);border-radius:12px;padding:12px;scrollbar-color:var(--line) transparent}
     header,.row{display:flex;align-items:center;gap:6px}header{justify-content:space-between;margin-bottom:8px}h2{font-size:14px;line-height:1.3;margin:0;font-weight:650}p{margin:6px 0}small,.hint{font-size:11px;color:var(--muted)}.hint{margin:6px 0 8px}
     button,input,select{font:inherit;color:inherit;accent-color:var(--accent)}button{min-height:34px;padding:6px 9px;border:1px solid var(--line);background:var(--control);border-radius:6px;cursor:pointer}button:hover{background:var(--hover)}button[aria-pressed=true],.primary{background:var(--accent);color:var(--pressed);border-color:var(--accent)}button.primary:hover,button[aria-pressed=true]:hover{background:var(--active-hover);color:var(--pressed)}button:disabled{opacity:.5;cursor:default}button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
-    input,select{width:100%;padding:6px;border:1px solid var(--line);border-radius:6px;background:var(--control);min-height:34px}input{caret-color:var(--ink)}label{display:block;font-weight:600;margin:8px 0 4px}.row>*{flex:1}#close,#expand{min-width:34px}#close{font-size:11px;padding:4px 6px;min-height:28px}#expand{background:var(--accent);color:var(--pressed)}
-    #photo{font-size:12px;margin:2px 0 7px;color:var(--muted)}#message{font-size:11px;min-height:15px;margin:7px 0 0;overflow-wrap:anywhere}#message:empty{display:none}#message.error{color:var(--error)}#decisions{gap:4px}#decisions button{padding:6px 5px;font-size:12px}#decisions kbd{font-size:10px;margin-left:3px;opacity:.85}kbd{font:inherit;font-weight:600}
+    input,select{width:100%;padding:6px;border:1px solid var(--line);border-radius:6px;background:var(--control);min-height:34px}input{caret-color:var(--ink)}label{display:block;font-weight:600;margin:8px 0 4px}.row>*{flex:1}#close,#expand{min-width:34px}#close{font-size:11px;padding:4px 6px;min-height:28px}#expand{background:var(--accent);color:var(--pressed);max-width:calc(100vw - 24px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #resume{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:7px;min-height:34px;border:1px solid var(--line);border-radius:6px;color:var(--link);text-decoration:none;font-size:12px;background:var(--control)}#resume:hover{background:var(--hover)}#resume[aria-disabled="true"]{opacity:.6;cursor:default}#review-badge{position:fixed;left:16px;bottom:16px;max-width:calc(100vw - 32px);padding:5px 9px;background:rgb(var(--surface)/var(--panel-alpha));color:var(--ink);border:1px solid var(--line);border-radius:6px;font-size:12px;pointer-events:none}#badge-option{display:flex;align-items:center;gap:7px;font-weight:400}#badge-option input{width:16px;min-height:16px;margin:0}#photo{font-size:12px;margin:2px 0 7px;color:var(--muted)}#message{font-size:11px;min-height:15px;margin:7px 0 0;overflow-wrap:anywhere}#message:empty{display:none}#message.error{color:var(--error)}#decisions{gap:4px}#decisions button{padding:6px 5px;font-size:12px}#decisions kbd{font-size:10px;margin-left:3px;opacity:.85}kbd{font:inherit;font-weight:600}
     #rating-buttons{display:flex;gap:4px}#rating-buttons button{flex:1;padding:5px;min-width:0}#rating-label{font-size:11px;color:var(--muted);margin:8px 0 4px}#selection{padding-top:1px}#select{width:100%;margin-top:4px}summary{cursor:pointer;margin-top:9px;font-size:12px;font-weight:600}#saved{max-height:180px;overflow:auto;margin:8px 0;padding-left:18px}#saved a{color:var(--link);text-underline-offset:3px;overflow-wrap:anywhere}#saved li{margin:7px 0}#library-line{font-size:12px;overflow-wrap:anywhere;margin-top:8px}#change{min-height:28px;padding:3px 6px;font-size:11px}#library-line span{font-weight:600}details .row{margin-top:8px}#backup{font-size:11px}
     fieldset{padding:0;margin:9px 0 0;border:0}legend{font-size:11px;font-weight:600;margin-bottom:4px}#rating-filters,#decision-filters{display:flex;flex-wrap:wrap;gap:4px}#rating-filters label,#decision-filters label{display:flex;align-items:center;gap:3px;min-height:32px;margin:0;padding:3px 4px;font-size:12px;font-weight:400;cursor:pointer}#rating-filters input,#decision-filters input{width:14px;height:14px;min-height:0;margin:0;padding:0}#opacity{padding:0;border:0;width:100%;background:transparent}#opacity-label{display:flex;justify-content:space-between;font-size:12px}#shortcuts{margin:8px 0;padding:0;list-style:none;color:var(--muted);font-size:12px}#shortcuts li{margin:5px 0}#native-nav{font-size:11px;color:var(--muted);margin:7px 0 0}
     svg{width:17px;height:17px;flex:none;pointer-events:none}.header-actions{display:flex;gap:5px}.icon-button{width:32px;min-height:30px;display:inline-flex;align-items:center;justify-content:center;padding:5px}#decisions button,#rating-buttons button,#compare-controls button{display:flex;align-items:center;justify-content:center;gap:5px}#rating-buttons button.rated svg{fill:currentColor}#compare-controls{margin-top:10px}#compare-controls button{font-size:11px;padding:5px;min-width:0}#compare-controls button svg{width:14px;height:14px}#hud-library{margin:7px 0 0}#quick-library{font-size:11px;min-height:28px;padding:4px}#reset-confirm{margin-top:10px;padding-top:4px}#reset-description{font-weight:600}#pin-diagnostics{width:100%;height:130px;font-size:11px;color:var(--ink);background:var(--control);border:1px solid var(--line);border-radius:6px;margin-top:6px}#copy-pin-diagnostics{font-size:11px;margin-top:6px}#reset-feedback:empty,#delete-feedback:empty{display:none}#delete-confirm{margin-top:10px}#delete-description{font-weight:600}#ratings-only{font-size:11px;min-height:28px;margin-top:4px}
@@ -24,12 +24,13 @@
     @media(prefers-color-scheme:dark){:host{--surface:23 29 25;--ink:#f1f6f2;--muted:#d1dcd4;--line:#6e8174;--control:#28382e;--hover:#35493c;--accent:#b0d8bc;--pressed:#102b1c;--active-hover:#c5e6ce;--focus:#9dc3ff;--error:#ffb9b1;--link:#b0d8bc}}
     @media(prefers-reduced-transparency:reduce){section{background:rgb(var(--surface))}}
     @media(forced-colors:active){section{background:Canvas;color:CanvasText;border-color:CanvasText}button{forced-color-adjust:auto}}
-    @media(max-width:480px){:host{right:12px;bottom:12px}section{padding:10px;width:290px}}
+    @media(max-width:480px){#review-badge{left:12px;bottom:58px}:host{right:12px;bottom:12px}section{padding:10px;width:290px}}
     @media(prefers-reduced-motion:no-preference){section{animation:appear .16s ease-out}@keyframes appear{from{transform:translateY(6px)}to{transform:translateY(0)}}}
   </style>
-  <button id="expand" hidden aria-label="Show Photo Review HUD (H)">Photo Review · H</button>
+  <div id="review-badge" hidden aria-label="Current photo review"></div>
+  <button id="expand" hidden aria-label="Show Photo Review HUD (Shift+H)">Photo Review · Shift+H</button>
   <section id="hud-panel" aria-label="Photo Review HUD">
-    <header><h2>Photo Review <small id="version"></small></h2><div class="header-actions"><button id="refresh-plugin" class="icon-button" hidden aria-label="Refresh plugin and this tab" title="Apply local files and refresh this tab. Clears temporary pins and Google selection; saved reviews stay.">${icon('refresh')}</button><button id="settings" class="icon-button" aria-label="Open settings" title="Settings (?)" aria-controls="settings-panel" aria-expanded="false">${icon('settings')}</button><button id="close" class="icon-button" aria-label="Minimize Photo Review HUD (H)" title="Hide (H)">${icon('hide')}</button></div></header>
+    <header><h2>Photo Review <small id="version"></small></h2><div class="header-actions"><button id="refresh-plugin" class="icon-button" hidden aria-label="Refresh plugin and this tab" title="Apply local files and refresh this tab. Clears temporary pins and Google selection; saved reviews stay.">${icon('refresh')}</button><button id="settings" class="icon-button" aria-label="Open settings" title="Settings (?)" aria-controls="settings-panel" aria-expanded="false">${icon('settings')}</button><button id="close" class="icon-button" aria-label="Minimize Photo Review HUD (Shift+H)" title="Hide (Shift+H)">${icon('hide')}</button></div></header>
     <form id="setup"><label for="library">Name this local review library</label><p class="hint">For example, Personal. Use a different name for each Google account. Reviews stay in this browser.</p><div class="row"><input id="library" maxlength="60" placeholder="Personal" required><button class="primary" type="submit">Use library</button></div></form>
     <div id="workspace" hidden>
       <div id="review-controls"><p id="photo">Open a photo to review it.</p>
@@ -38,6 +39,7 @@
       <p id="native-nav">Left / Right: Google Photos navigation · ? settings</p></div>
       <div id="compare-controls" class="row" aria-label="Pin photos for comparison"><button id="pin-a" title="Pin the currently visible photo as A">${icon('pin')}<span>Pin A</span></button><button id="pin-b" title="Pin the currently visible photo as B">${icon('pin')}<span>Pin B</span></button><button id="compare-open" title="Compare pinned photos">${icon('compare')}<span>Compare</span></button></div>
       <button id="copy-pin-diagnostics" hidden>Copy pin details</button><textarea id="pin-diagnostics" aria-label="Redacted pin details" readonly hidden></textarea>
+      <a id="resume" hidden>${icon('resume')}<span>Resume review</span></a>
       <div id="hud-library"><select id="quick-library" aria-label="Local review library"></select></div>
       <div id="selection"><fieldset><legend>Decision · optional</legend><div id="decision-filters"><label><input type="checkbox" value="accept">Accepted</label><label><input type="checkbox" value="reject" checked>Rejected</label><label><input type="checkbox" value="unreviewed">Unreviewed</label></div><button id="ratings-only">Ratings only</button><p id="decision-help" class="hint">No decisions checked means any decision.</p></fieldset>
       <fieldset><legend>Ratings · combine any</legend><div id="rating-filters"><label><input type="checkbox" value="0" checked>Unrated</label><label><input type="checkbox" value="1" checked>1</label><label><input type="checkbox" value="2" checked>2</label><label><input type="checkbox" value="3" checked>3</label><label><input type="checkbox" value="4" checked>4</label><label><input type="checkbox" value="5" checked>5</label></div></fieldset>
@@ -51,8 +53,8 @@
     <div class="panel-body">
       <div class="settings-group"><h3>Review library</h3><label for="library-select">Choose a saved library</label><select id="library-select"></select><form id="settings-library-form" hidden><label for="settings-library">New library name</label><div class="row"><input id="settings-library" maxlength="60" required placeholder="Personal"><button class="primary" type="submit">Create library</button></div></form><p class="hint">Use a separate name for each Google account. Reviews stay local; Google account order is not a permanent identity.</p><p id="delete-count" class="hint"></p><button id="delete-library">Delete library…</button><p id="delete-feedback" class="panel-message"></p><div id="delete-confirm" hidden><p id="delete-description"></p><p class="hint">Permanently removes this local library, all saved review values and photo links. No Undo. Export first if needed. Google Photos and other libraries stay unchanged.</p><div class="row"><button id="delete-cancel">Cancel</button><button id="delete-apply">Delete library permanently</button></div></div></div>
       <div class="settings-group"><h3>Start another review round</h3><p id="reset-count" class="hint"></p><p id="reset-feedback" class="panel-message"></p><button id="clear-reviews">Clear this round’s reviews</button><div id="reset-confirm" hidden><p id="reset-description"></p><p class="hint">Accept/Reject decisions and all ratings will be cleared. Photo links and the library stay; Google Photos and its current selection are unchanged. Export a backup first if you want to keep this round.</p><div class="row"><button id="reset-cancel">Cancel</button><button id="reset-apply">Clear reviews</button></div></div></div>
-      <div class="settings-group"><h3>Appearance</h3><label id="opacity-label" for="opacity">HUD background opacity <output id="opacity-value"></output></label><input id="opacity" type="range"><p class="hint">Follows system light/dark mode. Text and this settings panel stay solid. Opacity is saved on this browser.</p></div>
-      <div class="settings-group"><h3>Keyboard &amp; review</h3><ul id="shortcuts"><li><kbd>A</kbd> accept · <kbd>R</kbd> reject · <kbd>U</kbd> clear decision</li><li><kbd>1–5</kbd> rate · <kbd>0</kbd> clear rating</li><li>Choose the same decision or score again to clear it. Other review fields stay unchanged.</li><li><kbd>H</kbd> hide/show HUD · <kbd>?</kbd> open settings</li><li>Left/Right and Escape belong to Google Photos. Typing fields keep their normal keys.</li><li>Review shortcuts pause while settings, comparison or the minimized HUD are open.</li></ul></div>
+      <div class="settings-group"><h3>Appearance</h3><label id="badge-option"><input id="badge-enabled" type="checkbox" checked>Show review badge when HUD is hidden</label><label id="opacity-label" for="opacity">HUD background opacity <output id="opacity-value"></output></label><input id="opacity" type="range"><p class="hint">Follows system light/dark mode. Text and this settings panel stay solid. Opacity is saved on this browser.</p></div>
+      <div class="settings-group"><h3>Keyboard &amp; review</h3><ul id="shortcuts"><li><kbd>A</kbd> accept · <kbd>R</kbd> reject · <kbd>U</kbd> clear decision</li><li><kbd>1–5</kbd> rate · <kbd>0</kbd> clear rating</li><li>Choose the same decision or score again to clear it. Other review fields stay unchanged.</li><li><kbd>Shift+H</kbd> hide/show HUD · <kbd>?</kbd> open settings</li><li><kbd>h/k</kbd> previous photo · <kbd>j/l</kbd> next photo</li><li>Left/Right and Escape belong to Google Photos. Typing fields keep their normal keys.</li><li>Review and navigation shortcuts pause while settings or comparison are open. They stay active when the HUD is hidden.</li></ul></div>
       <div class="settings-group"><h3>Compare A &amp; B</h3><p>Open a photo and pin A. Navigate to another photo and pin B. Choose Compare for side-by-side or an overlay you can show and hide.</p><p class="hint">Comparison images stay in tab memory and are cleared on reload or when changing libraries. No image data is written to the review backup.</p></div>
       <div class="settings-group"><h3>Local data &amp; backup</h3><p class="hint">Only decisions, ratings and photo links are stored. These reviews do not sync to Google Photos or other browsers.</p><div class="row"><button id="export">Export reviews</button><button id="import">Restore reviews</button><input id="file" type="file" accept="application/json,.json" hidden></div><p id="backup" class="hint">Restore merges this library’s reviews; newer saved decisions win.</p><button id="update">Apply local update</button></div>
       <p id="settings-message" class="panel-message" role="status" aria-live="polite"></p>
@@ -69,7 +71,7 @@
   const slot=()=>location.pathname.match(/^\/u\/(\d+)(?:\/|$)/)?.[1]||'0';
   const scopeKey=()=>`photoReviewHudLibraryV1:${slot()}`;
   const appearance=C.OPACITY;
-  let opacity=appearance.default;
+  let opacity=appearance.default,badgeEnabled=true,resumePoint=null,lastRemembered='';
   $('opacity').min=String(appearance.min);$('opacity').max=String(appearance.max);$('opacity').step=String(appearance.step);
   function displayOpacity(value){host.style.setProperty('--panel-alpha',String(value/100));$('opacity').value=String(value);$('opacity-value').textContent=`${value}%`;}
   displayOpacity(opacity);
@@ -77,17 +79,53 @@
   const ratings=()=>[...root.querySelectorAll('#rating-filters input:checked')].map(input=>Number(input.value));
   let library='',reviews=new Map(),busy=false,stopping=false,hidden=false,revision=0,loadedSlot=slot(),lastPhoto=location.href,timer,settingsOpen=false,compareOpen=false;
   const pinEpoch={a:0,b:0},pinning={a:false,b:false};
-  let pinned={a:null,b:null},compareMode='side',showOverlay=false,libraries=[],creatingLibrary=false,resetSnapshot=null,deleteSnapshot=null;
-  const say=(message,error=false)=>{for(const id of ['message','settings-message','compare-message']){$(id).textContent=message;$(id).classList.toggle('error',error);}};
+  let pinned={a:null,b:null},compareMode='side',showOverlay=false,libraries=[],creatingLibrary=false,resetSnapshot=null,deleteSnapshot=null,statusError=false;
+  const say=(message,error=false)=>{statusError=error;for(const id of ['message','settings-message','compare-message']){$(id).textContent=message;$(id).classList.toggle('error',error);}renderMinimized();};
   const log=(operation,error)=>{console.error('photo-review-hud',operation,'chrome/local attempt=1',error.name,'status=unknown');};
   function resetFeedback(message,error=false){$('reset-feedback').textContent=message;$('reset-feedback').classList.toggle('error',error);}
   function deleteFeedback(message,error=false){$('delete-feedback').textContent=message;$('delete-feedback').classList.toggle('error',error);}
   const alive=()=>{try{return Boolean(chrome.runtime?.id);}catch{return false;}};
   function panelVisibility(){
     $('hud-panel').hidden=hidden||settingsOpen||compareOpen;$('settings-panel').hidden=hidden||!settingsOpen;$('compare-panel').hidden=hidden||!compareOpen;$('expand').hidden=!hidden;
+    renderBadge();
     $('settings').setAttribute('aria-expanded',String(settingsOpen&&!hidden));
   }
-  function minimize(){hidden=true;settingsOpen=false;compareOpen=false;panelVisibility();}
+  function renderBadge(){
+    const photo=C.identity(location.href),review=photo&&reviews.get(photo.id);
+    $('review-badge').hidden=!badgeEnabled||!hidden||!library||!photo;
+    $('review-badge').textContent=statusError?'Needs attention · open HUD':busy?'Saving review…':`${review?.decision==='accept'?'Accepted':review?.decision==='reject'?'Rejected':'Unreviewed'} · ${review?.stars?`${review.stars} stars`:'No rating'}`;
+  }
+  function renderResume(){
+    const link=$('resume');link.hidden=!resumePoint||Boolean(C.identity(location.href));
+    if(!resumePoint){link.removeAttribute('href');return;}
+    const url=new URL(resumePoint.url);url.pathname=url.pathname.replace(/^\/(?:u\/\d+\/)?/,`/u/${slot()}/`);
+    link.href=url.href;link.setAttribute('aria-disabled',String(busy));
+    link.title='Return to the last photo opened in this local library, including its album when available.';
+  }
+  $('resume').onclick=event=>{if(busy)event.preventDefault();};
+  async function rememberCurrentPhoto(){
+    const photo=C.identity(location.href);if(!photo||!library||document.visibilityState==='hidden')return;
+    const url=new URL(location.href);url.search='';url.hash='';
+    const signature=JSON.stringify([library,slot(),url.href]);if(signature===lastRemembered)return;
+    lastRemembered=signature;const scope=library,point={url:url.href,updatedAt:new Date().toISOString()};
+    try{
+      const result=await chrome.runtime.sendMessage({type:'hud-remember-photo',library:scope,point});
+      if(!result?.ok)throw new Error('ResumeSaveFailed');
+      if(scope===library){resumePoint=C.resumePoint(result.point);renderResume();}
+    }catch(error){lastRemembered='';log('remember-photo',error);say('Your place could not be saved. Try reopening this photo before leaving.',true);}
+  }
+  $('badge-enabled').onchange=async()=>{
+    const next=$('badge-enabled').checked;
+    try{await chrome.storage.local.set({[C.BADGE_KEY]:next});badgeEnabled=next;renderBadge();}
+    catch(error){$('badge-enabled').checked=badgeEnabled;log('save-badge',error);say('The badge setting could not be saved. Try again.',true);}
+  };
+  function renderMinimized(){
+    renderBadge();renderResume();if(!hidden)return;const photo=C.identity(location.href),review=photo&&reviews.get(photo.id);
+    const state=statusError?'Needs attention':busy?'Saving…':!library?'Choose a library':photo?`${review?.decision==='accept'?'Accepted':review?.decision==='reject'?'Rejected':'Unreviewed'} · ${review?.stars?`${review.stars} stars`:'No rating'}`:'Open a photo';
+    const label=`Photo Review${badgeEnabled&&!statusError?'':` · ${state}`} · Shift+H`;if($('expand').textContent!==label)$('expand').textContent=label;
+    $('expand').setAttribute('aria-label',`Show Photo Review HUD. ${state}. Shortcut Shift+H.`);$('expand').title=statusError?$('message').textContent:'Review shortcuts A/R/U and 0–5 are active. Shift+H shows the HUD.';
+  }
+  function minimize(){hidden=true;settingsOpen=false;compareOpen=false;panelVisibility();renderMinimized();}
   function show(){hidden=false;panelVisibility();schedule();}
   function openSettings(create=false){hidden=false;settingsOpen=true;compareOpen=false;creatingLibrary=create;renderLibraryChoices();say('');panelVisibility();(create?$('settings-library'):$('settings-close')).focus();}
   function closeSettings(){settingsOpen=false;panelVisibility();$('settings').focus();}
@@ -121,6 +159,7 @@
   const checked=el=>el.matches('input')?el.checked:el.getAttribute('aria-checked')==='true';
   function matchingReviews(selectedDecisions,selectedRatings){return [...reviews.values()].filter(r=>C.matches(r,selectedDecisions,selectedRatings)).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt)||a.id.localeCompare(b.id));}
   function render(){
+    renderMinimized();
     if(resetSnapshot&&!busy&&(resetSnapshot.library!==library||resetSnapshot.stamp!==C.reviewStamp([...reviews.values()]))){resetSnapshot=null;$('reset-confirm').hidden=true;resetFeedback('Reviews changed while confirmation was open. Check the updated count before clearing.',true);say('Reviews changed while confirmation was open. Check the updated count before clearing.',true);}
     $('setup').hidden=Boolean(library);$('workspace').hidden=!library;
     renderLibraryChoices();
@@ -157,14 +196,17 @@
       const saved=await chrome.storage.local.get(null);if(generation!==revision)return;
       opacity=C.validOpacity(saved[appearance.key])?saved[appearance.key]:appearance.default;displayOpacity(opacity);
       if(saved[appearance.key]!==undefined&&!C.validOpacity(saved[appearance.key]))say('The saved opacity was invalid. Using the default until you change it.',true);
+      badgeEnabled=saved[C.BADGE_KEY]!==false;$('badge-enabled').checked=badgeEnabled;
       libraries=C.libraryNames(saved);
       const previousLibrary=library;
       library=typeof saved[scopeKey()]==='string'?C.libraryName(saved[scopeKey()]):'';
+      if(previousLibrary!==library)lastRemembered='';
+      try{resumePoint=C.resumePoint(saved[C.resumeKey(library)]);}catch{resumePoint=null;}
       if(previousLibrary&&previousLibrary!==library){releasePins();if(compareOpen){compareOpen=false;panelVisibility();}}
       reviews=new Map();for(const [key,value]of Object.entries(saved))if(key.startsWith(C.PREFIX)){
         try{const r=C.record(value);if(r.library===library&&key===C.key(r.library,r.id))reviews.set(r.id,r);}catch{}
       }
-      render();
+      render();rememberCurrentPhoto();
     }catch(error){log('load',error);say('Your reviews could not load. Reload this Google Photos tab; saved data has not been cleared.',true);}
   }
   function renderLibraryChoices(){
@@ -405,23 +447,31 @@
     catch(error){if(!alive())markStale();else{log('check-local-update',error);$('refresh-plugin').hidden=true;$('refresh-plugin').title='Update check unavailable. Click to reload local files, or reload from chrome://extensions.';}}
     finally{checkingUpdate=false;}
   }
-  window.addEventListener('focus',checkUpdate);document.addEventListener('visibilitychange',checkUpdate);
+  window.addEventListener('focus',()=>{checkUpdate();rememberCurrentPhoto();});document.addEventListener('visibilitychange',checkUpdate);
   setInterval(checkUpdate,60000);
   document.addEventListener('keydown',event=>{
     const target=event.composedPath()[0];
     if(event.defaultPrevented||event.isComposing||event.repeat||event.ctrlKey||event.metaKey||event.altKey||target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="textbox"],[role="combobox"]'))return;
     // Never cancel or reinterpret the site's navigation keys, even while saving.
     if(['ArrowLeft','ArrowRight','Escape'].includes(event.key))return;
-    if(event.key.toLowerCase()==='h'&&!event.shiftKey){event.preventDefault();event.stopImmediatePropagation();hidden?show():minimize();return;}
+    if(event.key==='H'&&event.shiftKey){event.preventDefault();event.stopImmediatePropagation();hidden?show():minimize();return;}
     if(event.key==='?'){event.preventDefault();event.stopImmediatePropagation();openSettings();return;}
-    if(hidden||settingsOpen||compareOpen||busy||!library||!C.identity(location.href)||event.shiftKey)return;
+    if(settingsOpen||compareOpen||!C.identity(location.href)||event.shiftKey)return;
+    const direction={h:'ArrowLeft',k:'ArrowLeft',j:'ArrowRight',l:'ArrowRight'}[event.key];
+    if(direction){
+      event.preventDefault();event.stopImmediatePropagation();
+      const code=direction==='ArrowLeft'?37:39;
+      (target?.dispatchEvent?target:document.body).dispatchEvent(new KeyboardEvent('keydown',{key:direction,code:direction,keyCode:code,which:code,bubbles:true,composed:true,cancelable:true}));
+      return;
+    }
+    if(busy||!library)return;
     const decision={a:'accept',r:'reject',u:'unreviewed'}[event.key.toLowerCase()];
     if(!decision&&!/^[0-5]$/.test(event.key))return;
     event.preventDefault();event.stopImmediatePropagation();decision?chooseDecision(decision):chooseStars(Number(event.key));
   },true);
-  function schedule(){if(hidden||timer)return;timer=setTimeout(()=>{timer=null;if(!host.isConnected)document.documentElement.append(host);if(loadedSlot!==slot()){loadedSlot=slot();load();return;}const next=location.href;if(next!==lastPhoto){lastPhoto=next;say('');}render();},180);}
+  function schedule(){if(timer)return;timer=setTimeout(()=>{timer=null;if(!host.isConnected)document.documentElement.append(host);if(loadedSlot!==slot()){loadedSlot=slot();load();return;}const next=location.href;if(next!==lastPhoto){lastPhoto=next;say('');}if(hidden)renderMinimized();else render();rememberCurrentPhoto();},180);}
   new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['href','aria-checked']});
   window.addEventListener('popstate',schedule);window.addEventListener('pagehide',releasePins);
-  chrome.storage.onChanged.addListener((changes,area)=>{if(area==='local'&&Object.keys(changes).some(k=>k.startsWith(C.PREFIX)||k===scopeKey()||k===appearance.key||k===C.LIBRARIES_KEY||k.startsWith(C.LIBRARY_PREFIX)))load();});
+  chrome.storage.onChanged.addListener((changes,area)=>{if(area==='local'&&Object.keys(changes).some(k=>k.startsWith(C.PREFIX)||k===scopeKey()||k===appearance.key||k===C.BADGE_KEY||k.startsWith(C.RESUME_PREFIX)||k===C.LIBRARIES_KEY||k.startsWith(C.LIBRARY_PREFIX)))load();});
   load();checkUpdate();
 })();

@@ -9,9 +9,11 @@ Review existing photos directly in Google Photos, without exporting or uploading
 A compact HUD sits at the bottom right of Google Photos. It follows system light/dark appearance. A larger settings panel holds library management, appearance, shortcuts, backups and local updates.
 
 - Accept/Reject and 1–5 ratings toggle off when selected again. Unreviewed and no rating are represented by the absence of an active choice.
-- A/R/U set or clear decisions; 1–5/0 set or clear ratings. H hides/shows the HUD and ? opens settings. Review shortcuts pause in settings, comparison and the minimized HUD.
+- A/R/U set or clear decisions; 1–5/0 set or clear ratings. Shift+H hides/shows the HUD and ? opens settings. Lowercase h/k go to the previous photo; j/l go to the next by forwarding Left/Right key events to the page. Review and navigation shortcuts stay active when the HUD is minimized and pause in settings, comparison and typing fields. The minimized control shows the current photo’s decision/rating or a saving/error cue.
 - Native Left/Right/Escape pass through unchanged. Typing and modifier shortcuts keep their normal behavior.
 - Decisions are an optional OR filter; selected ratings narrow matches. No checked decisions means any decision. No checked ratings means no matches.
+- Resume review appears only in list/grid views, never on an individual photo. It stores one last-viewed photo per local library, including album context. It records visible-tab visits only, preserves the newest timestamp across tabs, and returns to the last photo whether reviewed or unreviewed. Links are restricted to validated Google Photos routes; queries and fragments are discarded. Round reset clears the point; library deletion removes it. Resume points are not part of review backups.
+- A small review-status badge appears while the HUD is hidden. Settings → Appearance can disable it; the minimized control then shows the status instead. Errors remain visible in the minimized control.
 - A saved-library picker restores local review collections. Names are user-chosen, not Google account or album identities.
 
 ## Runtime
@@ -59,3 +61,7 @@ Applying an update waits for queued review writes, records the requesting tab, r
 No analytics, image uploads, service credentials, cookie access, private API client or Google photo deletion. Extension-page connections are limited to local extension resources. Normal image rendering may request the same Google image resource already displayed by the site.
 
 Browser selectors and web IDs are not a public API contract. Keep unfamiliar sources/controls blocked or unsupported, provide redacted diagnostics, and distinguish fixture results from real account testing.
+
+## Applicable standards
+
+List-view: resume uses a stable photo link and explicit per-library scope. It does not infer a complete unseen collection, capture-date order or an unreviewed queue. Server pagination and new sorting controls are out of scope. Settings-and-preferences: badge visibility persists locally, has a clear default and rolls back after a failed write.

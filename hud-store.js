@@ -55,7 +55,8 @@ export function clearReviews(message,storage) {
     if(message.stamp!==C.reviewStamp(records))throw new Error('Reviews changed.');
     const active=C.activeReviews(records),changes={},updatedAt=new Date().toISOString();
     for(const record of active)changes[C.key(library,record.id)]={...record,decision:'unreviewed',stars:0,updatedAt};
-    if(active.length)await storage.set(changes);
+    if(saved[C.resumeKey(library)])changes[C.resumeKey(library)]=null;
+    if(Object.keys(changes).length)await storage.set(changes);
     return {count:active.length};
   });writes=operation;return operation;
 }
@@ -70,8 +71,22 @@ export function deleteLibrary(message,storage) {
     const names=C.libraryNames(saved),registrations=Object.fromEntries(names.map(name=>[C.libraryKey(name),true]));
     await storage.set({...registrations,[C.LIBRARIES_KEY]:[]});
     const bindings=Object.keys(saved).filter(key=>key.startsWith('photoReviewHudLibraryV1:')&&saved[key]===library);
-    const remove=[...keys,C.libraryKey(library),...bindings];
+    const remove=[...keys,C.libraryKey(library),C.resumeKey(library),...bindings];
     const bytes=storage.getBytesInUse?await storage.getBytesInUse(remove):null;
     await storage.remove(remove);return {count:records.length,bytes};
+  });writes=operation;return operation;
+}
+
+
+/** Keep one last-viewed photo per library, in the same queue as library removal. */
+export function rememberPhoto(message,storage) {
+  const operation=writes.catch(()=>{}).then(async()=>{
+    const library=C.libraryName(message.library),point=C.resumePoint(message.point),key=C.resumeKey(library);
+    if(!/^\d+$/.test(message.accountSlot)||C.identity(point.url).slot!==message.accountSlot)throw new Error('Invalid account slot.');
+    const saved=await storage.get([key,`photoReviewHudLibraryV1:${message.accountSlot}`]);
+    if(saved[`photoReviewHudLibraryV1:${message.accountSlot}`]!==library)throw new Error('Library is no longer active.');
+    let old;try{old=C.resumePoint(saved[key]);}catch{}
+    if(old&&old.updatedAt>point.updatedAt)return old;
+    await storage.set({[key]:point});return point;
   });writes=operation;return operation;
 }

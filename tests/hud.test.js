@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {JSDOM} from 'jsdom';
-import {updateReview,restoreReviews,useLibrary,clearReviews,deleteLibrary} from '../hud-store.js';
+import {updateReview,restoreReviews,useLibrary,clearReviews,deleteLibrary,rememberPhoto} from '../hud-store.js';
 const C=globalThis.PhotoReviewHUDCore;
 const url=id=>`https://photos.google.com/u/2/photo/${id}`;
 function memory(initial={}){
@@ -41,7 +41,7 @@ async function fixture(path='/u/2/photo/A',initial={}){
   const dom=new JSDOM('<!doctype html><html><body><main></main><input id="typing"></body></html>',{url:'https://photos.google.com'+path,runScripts:'outside-only',pretendToBeVisual:true});
   const {window}=dom,storage=memory(initial);
   window.HTMLElement.prototype.getClientRects=function(){return this.hidden||this.closest('[hidden]')?[]:[{width:100,height:100}];};
-  window.chrome={runtime:{id:'synthetic',getManifest:()=>({version:'0.4.7'}),onMessage:{addListener(){}},sendMessage:async message=>message.type==='hud-check-update'?{ok:true,current:'0.4.7',version:'0.4.7',available:false}:message.type==='hud-use-library'?{ok:true,...await useLibrary(message,storage,'2')}:message.type==='hud-clear-reviews'?{ok:true,...await clearReviews(message,storage)}:message.type==='hud-delete-library'?{ok:true,...await deleteLibrary(message,storage)}:{ok:true,value:await updateReview(message,storage)}},storage:{local:storage,onChanged:{addListener:fn=>storage.listeners.push(fn)}}};
+  window.chrome={runtime:{id:'synthetic',getManifest:()=>({version:'0.4.11'}),onMessage:{addListener(){}},sendMessage:async message=>message.type==='hud-remember-photo'?{ok:true,point:await rememberPhoto({...message,accountSlot:'2'},storage)}:message.type==='hud-check-update'?{ok:true,current:'0.4.11',version:'0.4.11',available:false}:message.type==='hud-use-library'?{ok:true,...await useLibrary(message,storage,'2')}:message.type==='hud-clear-reviews'?{ok:true,...await clearReviews(message,storage)}:message.type==='hud-delete-library'?{ok:true,...await deleteLibrary(message,storage)}:{ok:true,value:await updateReview(message,storage)}},storage:{local:storage,onChanged:{addListener:fn=>storage.listeners.push(fn)}}};
   window.eval(await readFile(new URL('../hud-core.js',import.meta.url),'utf8'));
   window.eval(await readFile(new URL('../hud.js',import.meta.url),'utf8'));
   const root=window.document.getElementById('photo-review-hud').shadowRoot;
@@ -51,13 +51,13 @@ async function fixture(path='/u/2/photo/A',initial={}){
     root.getElementById('library').value=name;root.getElementById('setup').dispatchEvent(new window.Event('submit',{cancelable:true}));await settle();
   }};
 }
-test('HUD decisions survive navigation, ignore typing/hidden shortcuts and report save failures',async()=>{
+test('HUD decisions survive navigation, keep hidden shortcuts and ignore typing and report save failures',async()=>{
   const f=await fixture();await f.library();
   f.root.querySelector('[data-decision="reject"]').click();await f.settle();
   f.root.querySelector('[data-stars="4"]').click();await f.settle();
   assert.equal(f.storage.data[C.key('Personal','A')].decision,'reject');assert.equal(f.storage.data[C.key('Personal','A')].stars,4);
   f.window.document.getElementById('typing').dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'a',bubbles:true}));await f.settle();assert.equal(f.storage.data[C.key('Personal','A')].decision,'reject');
-  f.$('close').click();f.window.document.body.dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'a',bubbles:true}));await f.settle();assert.equal(f.storage.data[C.key('Personal','A')].decision,'reject');
+  f.$('close').click();f.window.document.body.dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'r',bubbles:true}));await f.settle();assert.equal(f.storage.data[C.key('Personal','A')].decision,'unreviewed');f.window.document.body.dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'r',bubbles:true}));await f.settle();assert.equal(f.storage.data[C.key('Personal','A')].decision,'reject');
   f.$('expand').click();f.storage.fail=true;f.root.querySelector('[data-decision="accept"]').click();await f.settle();
   assert.match(f.$('message').textContent,/not saved/);assert.equal(f.storage.data[C.key('Personal','A')].decision,'reject');
   f.storage.fail=false;f.window.history.pushState({},'',url('B'));f.window.dispatchEvent(new f.window.PopStateEvent('popstate'));
@@ -113,18 +113,18 @@ test('rating filters combine nonadjacent stars, include unrated explicitly and a
   f.dom.window.close();
 });
 
-test('review buttons leave navigation keys to the page and H toggles shortcuts without intercepting typing',async()=>{
+test('review buttons leave navigation keys to the page and Shift+H toggles visibility without intercepting typing',async()=>{
   const f=await fixture();await f.library();let navigations=0;
   f.window.document.addEventListener('keydown',event=>{if(event.key==='ArrowRight'&&!event.defaultPrevented)navigations++;});
   const button=f.root.querySelector('[data-stars="3"]');button.click();await f.settle();button.focus();
   const arrow=new f.window.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true,composed:true,cancelable:true});button.dispatchEvent(arrow);
   assert.equal(arrow.defaultPrevented,false);assert.equal(navigations,1);assert.equal(f.storage.data[C.key('Personal','A')].stars,3);
   const press=(key,options={})=>f.window.document.body.dispatchEvent(new f.window.KeyboardEvent('keydown',{key,bubbles:true,cancelable:true,...options}));
-  press('h');assert.equal(f.$('expand').hidden,false);press('r');await f.settle();assert.equal(f.storage.data[C.key('Personal','A')].decision,'unreviewed');
-  press('h');assert.equal(f.$('expand').hidden,true);press('r');await f.settle();assert.equal(f.storage.data[C.key('Personal','A')].decision,'reject');
+  press('H',{shiftKey:true});assert.equal(f.$('expand').hidden,false);press('r');await f.settle();assert.equal(f.storage.data[C.key('Personal','A')].decision,'reject');
+  press('H',{shiftKey:true});assert.equal(f.$('expand').hidden,true);press('r');await f.settle();assert.equal(f.storage.data[C.key('Personal','A')].decision,'unreviewed');
   press('?',{shiftKey:true});assert.equal(f.$('settings-panel').hidden,false);
   f.window.document.getElementById('typing').dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'h',bubbles:true}));assert.equal(f.$('expand').hidden,true);
-  const editable=f.window.document.createElement('div');editable.setAttribute('contenteditable','');f.window.document.body.append(editable);editable.dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'a',bubbles:true}));await f.settle();assert.equal(f.storage.data[C.key('Personal','A')].decision,'reject');
+  const editable=f.window.document.createElement('div');editable.setAttribute('contenteditable','');f.window.document.body.append(editable);editable.dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'a',bubbles:true}));await f.settle();assert.equal(f.storage.data[C.key('Personal','A')].decision,'unreviewed');
   f.dom.window.close();
 });
 
@@ -277,7 +277,7 @@ test('HUD switches saved libraries without typing and clear-round requires expli
 
 test('HUD update button stays hidden without a detected newer version or if checking fails',async()=>{
   const f=await fixture();await f.library();assert.equal(f.$('refresh-plugin').hidden,true);
-  let now=Date.now()+11000;f.window.Date.now=()=>now;f.window.chrome.runtime.sendMessage=async()=>({ok:true,current:'0.4.7',version:'0.4.7',available:true});
+  let now=Date.now()+11000;f.window.Date.now=()=>now;f.window.chrome.runtime.sendMessage=async()=>({ok:true,current:'0.4.11',version:'0.4.11',available:true});
   f.window.dispatchEvent(new f.window.Event('focus'));await f.settle();assert.equal(f.$('refresh-plugin').hidden,false);
   now+=11000;f.window.chrome.runtime.sendMessage=async()=>{throw new Error('Unavailable');};f.window.dispatchEvent(new f.window.Event('focus'));await f.settle();assert.equal(f.$('refresh-plugin').hidden,true);f.dom.window.close();
 });
@@ -360,4 +360,86 @@ test('pin accepts the reported Google Photos FIFE host and excludes lookalike do
     else{assert.match(f.$('message').textContent,/not supported/);assert.equal(f.$('copy-pin-diagnostics').hidden,false);}
     f.dom.window.close();
   }
+});
+
+test('minimized HUD keeps review shortcuts active across photo navigation while preserving typing and native keys',async()=>{
+  const f=await fixture();try{
+    await f.library();f.$('close').click();
+    const press=(key,target=f.window.document.body,extra={})=>{const event=new f.window.KeyboardEvent('keydown',{key,bubbles:true,composed:true,cancelable:true,...extra});target.dispatchEvent(event);return event;};
+    press('a');await f.settle();assert.equal(f.storage.data[C.key('Personal','A')]?.decision,'accept');assert.equal(f.$('hud-panel').hidden,true);
+    press('5');await f.settle();assert.equal(f.storage.data[C.key('Personal','A')].stars,5);
+    press('a',f.window.document.getElementById('typing'));press('3',f.window.document.body,{ctrlKey:true});await f.settle();assert.equal(f.storage.data[C.key('Personal','A')].decision,'accept');assert.equal(f.storage.data[C.key('Personal','A')].stars,5);
+    for(const key of ['ArrowLeft','ArrowRight','Escape'])assert.equal(press(key).defaultPrevented,false);
+    f.window.history.pushState({},'',url('B'));f.window.dispatchEvent(new f.window.PopStateEvent('popstate'));press('r');await f.settle();assert.equal(f.storage.data[C.key('Personal','B')].decision,'reject');assert.equal(f.storage.data[C.key('Personal','A')].decision,'accept');
+    press('u');await f.settle();press('0');await f.settle();assert.equal(f.storage.data[C.key('Personal','B')].decision,'unreviewed');
+  }finally{f.dom.window.close();}
+});
+
+
+test('Vim photo navigation works expanded and hidden, pauses in panels and typing, and leaves saving attached to its photo',async()=>{
+  const f=await fixture();
+  try{
+    await f.library();
+    const arrows=[];
+    f.window.document.addEventListener('keydown',event=>{if(['ArrowLeft','ArrowRight'].includes(event.key)&&!event.defaultPrevented){arrows.push([event.key,event.keyCode]);f.window.history.pushState({},'',url(event.key==='ArrowLeft'?'A':'B'));}});
+    const press=(key,target=f.window.document.body,extra={})=>{const event=new f.window.KeyboardEvent('keydown',{key,bubbles:true,composed:true,cancelable:true,...extra});target.dispatchEvent(event);return event;};
+    for(const key of ['h','j','k','l'])assert.equal(press(key).defaultPrevented,true);
+    assert.deepEqual(arrows,[['ArrowLeft',37],['ArrowRight',39],['ArrowLeft',37],['ArrowRight',39]]);
+    assert.equal(f.$('expand').hidden,true);
+    press('H',undefined,{shiftKey:true});assert.equal(f.$('expand').hidden,false);
+    press('h');assert.equal(arrows.length,5);assert.equal(f.$('expand').hidden,false);
+    for(const extra of [{ctrlKey:true},{metaKey:true},{altKey:true},{shiftKey:true},{repeat:true},{isComposing:true}])assert.equal(press('j',undefined,extra).defaultPrevented,false);
+    press('l',f.window.document.getElementById('typing'));assert.equal(arrows.length,5);
+    press('H',undefined,{shiftKey:true});press('?');press('j');assert.equal(arrows.length,5);
+    f.$('settings-close').click();
+    const image=f.window.document.createElement('img');image.src='data:image/png;base64,AA==';Object.defineProperties(image,{complete:{get:()=>true},naturalWidth:{get:()=>600}});image.getBoundingClientRect=()=>({width:600,height:400,left:0,top:0,right:600,bottom:400});f.window.document.querySelector('main').append(image);
+    f.$('pin-a').click();f.window.history.pushState({},'',url('B'));f.$('pin-b').click();
+    f.$('compare-open').click();press('k');assert.equal(arrows.length,5);f.$('compare-close').click();
+    let finish;
+    const original=f.window.chrome.runtime.sendMessage;
+    f.window.chrome.runtime.sendMessage=message=>message.type==='hud-save'?new Promise(resolve=>{finish=()=>original(message).then(resolve);}):original(message);
+    f.window.history.pushState({},'',url('A'));press('a');press('l');
+    assert.equal(arrows.length,6);assert.equal(f.window.location.href,url('B'));
+    assert.equal(typeof finish,'function');await finish();await f.settle();
+    assert.equal(f.storage.data[C.key('Personal','A')].decision,'accept');
+    assert.equal(f.storage.data[C.key('Personal','B')],undefined);
+    f.window.history.pushState({},'','/u/2/album/DEMO');assert.equal(press('h').defaultPrevented,false);assert.equal(arrows.length,6);
+  }finally{f.dom.window.close();}
+});
+
+
+test('resume points retain album context, reject stale libraries and older visits, and clear with their library',async()=>{
+  const storage=memory();await useLibrary({library:'Personal'},storage,'2');await useLibrary({library:'Other'},storage,'3');
+  const point={url:'https://photos.google.com/u/2/album/DEMO/photo/A?private=omit#omit',updatedAt:'2026-11-03T10:00:00.000Z'};
+  await rememberPhoto({library:'Personal',accountSlot:'2',point},storage);
+  await rememberPhoto({library:'Other',accountSlot:'3',point:{...point,url:'https://photos.google.com/u/3/photo/OTHER'}},storage);
+  storage.fail=true;await assert.rejects(rememberPhoto({library:'Personal',accountSlot:'2',point:{...point,url:url('B')}},storage));storage.fail=false;
+  assert.equal(storage.data[C.resumeKey('Personal')].url,'https://photos.google.com/u/2/album/DEMO/photo/A');
+  await rememberPhoto({library:'Personal',accountSlot:'2',point:{...point,url:url('B'),updatedAt:'2026-11-02T10:00:00.000Z'}},storage);
+  assert.equal(storage.data[C.resumeKey('Personal')].id,'A');
+  await assert.rejects(rememberPhoto({library:'Other',accountSlot:'2',point},storage));
+  await assert.rejects(rememberPhoto({library:'Personal',accountSlot:'3',point},storage));
+  await assert.rejects(rememberPhoto({library:'Personal',accountSlot:'2',point:{...point,url:'https://example.com/photo/A'}},storage));
+  await clearReviews({library:'Personal',stamp:C.reviewStamp([])},storage);assert.equal(storage.data[C.resumeKey('Personal')],null);
+  await rememberPhoto({library:'Personal',accountSlot:'2',point},storage);
+  await deleteLibrary({library:'Personal',stamp:C.libraryStamp([])},storage);assert.equal(storage.data[C.resumeKey('Personal')],undefined);
+  await assert.rejects(rememberPhoto({library:'Personal',accountSlot:'2',point},storage));
+  assert.equal(storage.data[C.resumeKey('Other')].id,'OTHER');
+});
+
+test('HUD remembers the last photo, resumes from the grid after reload, and offers an optional hidden review badge',async()=>{
+  const f=await fixture('/u/2/album/DEMO/photo/A');
+  try{
+    await f.library();await f.settle();assert.equal(f.storage.data[C.resumeKey('Personal')].id,'A');assert.equal(f.$('resume').hidden,true);
+    assert.equal(f.$('resume').href,'https://photos.google.com/u/2/album/DEMO/photo/A');
+    f.$('close').click();assert.equal(f.$('review-badge').hidden,false);assert.match(f.$('review-badge').textContent,/Unreviewed/);
+    f.window.document.body.dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'r',bubbles:true}));await f.settle();assert.match(f.$('review-badge').textContent,/Rejected/);
+    f.$('expand').click();assert.equal(f.$('review-badge').hidden,true);
+    f.$('settings').click();f.storage.fail=true;f.$('badge-enabled').checked=false;f.$('badge-enabled').dispatchEvent(new f.window.Event('change'));await f.settle();assert.equal(f.$('badge-enabled').checked,true);assert.match(f.$('settings-message').textContent,/badge setting could not be saved/);f.storage.fail=false;f.$('badge-enabled').checked=false;f.$('badge-enabled').dispatchEvent(new f.window.Event('change'));await f.settle();
+    f.$('settings-close').click();f.$('close').click();assert.equal(f.$('review-badge').hidden,true);
+    f.window.history.pushState({},'','/u/2/album/DEMO');f.window.dispatchEvent(new f.window.PopStateEvent('popstate'));await new Promise(resolve=>setTimeout(resolve,210));await f.settle();
+    assert.equal(f.storage.data[C.resumeKey('Personal')].id,'A');assert.equal(f.$('review-badge').hidden,true);assert.equal(f.$('resume').hidden,false);
+    const g=await fixture('/u/2/album/DEMO',f.storage.data);
+    try{assert.equal(g.$('resume').hidden,false);assert.equal(g.$('resume').href,'https://photos.google.com/u/2/album/DEMO/photo/A');assert.equal(g.$('badge-enabled').checked,false);}finally{g.dom.window.close();}
+  }finally{f.dom.window.close();}
 });
