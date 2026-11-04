@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Photo Review Bridge",
-  "version": "0.4.7",
+  "version": "0.4.11",
   "description": "A local review HUD for Google Photos: accept, reject, rate and select loaded photos. No uploads or deletion.",
   "minimum_chrome_version": "109",
   "permissions": [

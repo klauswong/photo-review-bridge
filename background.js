@@ -1,5 +1,5 @@
 import {checkLocalVersion,resumeHudReload,HUD_RELOAD_KEY} from './hud-updates.js';
-import {updateReview,restoreReviews,flushReviews,useLibrary,clearReviews,deleteLibrary} from './hud-store.js';
+import {updateReview,restoreReviews,flushReviews,useLibrary,clearReviews,deleteLibrary,rememberPhoto} from './hud-store.js';
 let opening = false;
 chrome.runtime.onInstalled.addListener(async ({reason}) => {
   if(reason!=='update')return;
@@ -37,11 +37,12 @@ chrome.action.onClicked.addListener(async tab => {
 });
 
 chrome.runtime.onMessage?.addListener((message,sender,respond)=>{
-  if(!['hud-save','hud-restore','hud-reload','hud-check-update','hud-use-library','hud-clear-reviews','hud-delete-library'].includes(message?.type))return;
+  if(!['hud-save','hud-remember-photo','hud-restore','hud-reload','hud-check-update','hud-use-library','hud-clear-reviews','hud-delete-library'].includes(message?.type))return;
   if(sender.id!==chrome.runtime.id || !sender.tab?.url?.startsWith('https://photos.google.com/'))return;
   (async()=>{
     try{
       const accountSlot=new URL(sender.tab.url).pathname.match(/^\/u\/(\d+)(?:\/|$)/)?.[1]||'0';
+      if(message.type==='hud-remember-photo')respond({ok:true,point:await rememberPhoto({...message,accountSlot},chrome.storage.local)});
       if(message.type==='hud-save')respond({ok:true,value:await updateReview({...message,accountSlot},chrome.storage.local)});
       if(message.type==='hud-restore')respond({ok:true,count:await restoreReviews({...message,accountSlot},chrome.storage.local)});
       if(message.type==='hud-use-library')respond({ok:true,...await useLibrary(message,chrome.storage.local,new URL(sender.tab.url).pathname.match(/^\/u\/(\d+)(?:\/|$)/)?.[1]||'0')});

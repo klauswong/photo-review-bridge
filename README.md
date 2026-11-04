@@ -1,116 +1,99 @@
-# Photo Review · Google Photos HUD
+# Photo Review Bridge
 
-**v0.4.7** adds a local HUD directly to Google Photos. Lightroom is no longer part of the active workflow. No photo uploads or deletion, Google metadata edits, private APIs or server are used.
+A Chrome extension for reviewing photos directly in Google Photos. Mark keepers and rejects, add star ratings, compare two photos and select your matches. Reviews stay in your browser.
+
+Current version: **0.4.11**.
 
 ## Install
 
-1. Download or clone the source into a stable folder. If using an archive, extract it first.
-2. Open `chrome://extensions` in desktop Chrome and enable Developer mode.
-3. Choose **Load unpacked** and select the folder containing manifest.json.
-4. Open your signed-in Google Photos page and click the extension toolbar icon.
+1. Download or clone this project. Extract it if you downloaded a ZIP.
+2. Open `chrome://extensions` and turn on **Developer mode**.
+3. Click **Load unpacked** and choose the folder containing `manifest.json`.
+4. Open Google Photos and click the extension icon to show the HUD.
 
-No server, API key, cookie export or developer OAuth registration is needed. npm dependencies are for development tests only.
+No server, API key or npm installation is needed to use it.
 
-## Try the update
+## Review photos
 
-1. Keep the loaded extension folder at a stable location on your machine.
-2. In the old workspace, click **Apply local update**. Alternatively, click Reload for Photo Review Bridge at `chrome://extensions`.
-3. Reload Google Photos once, then click the extension icon. The HUD appears in the lower-right corner.
-4. Choose a saved local review library from the HUD dropdown, or choose New review library and name it, such as Personal. **Use different names for different Google accounts.** The name is chosen by you; it is not verified against Google's account identity. The browser remembers the choice per Google account URL slot, which can change if accounts are reordered.
-5. Open a photo. Choose **Accept** or **Reject**, and an optional 1–5 star rating. Choose the same decision or score again to clear it; rating 0 means no rating and has no button. There is no automatic advance.
-6. Return to the grid. Check any combination of **Accepted / Rejected / Unreviewed** and **Unrated / 1 / 2 / 3 / 4 / 5**, then **Select matches & scroll**. The HUD adds matching photos to the existing selection; it never clears unrelated selections. Check Google's selection before taking any further action yourself.
+1. Choose or create a **review library** in the HUD. This is a local collection of your reviews, not a Google Photos album. Use separate names for different Google accounts.
+2. Open a photo. Click **Accept**, **Reject** or a rating from **1–5**.
+3. Click the same choice again to clear it. Use Google Photos’ arrows to move to the next photo.
 
-Keyboard: **A** Accept, **R** Reject, **U** clear decision, **1–5** rate, **0** clear rating. **H** hides/shows the HUD and **?** opens settings. Review shortcuts apply only with the HUD expanded on an individual photo; typing, composing text and modifier shortcuts are ignored. H and ? still work from the minimized HUD. Review shortcuts pause in settings or comparison. Repeating A/R or a score toggles it off; U/0 always clear the corresponding field. **Left/Right and Escape are passed through unchanged to Google Photos**; the HUD does not implement or guarantee navigation itself. Rating uses buttons instead of an arrow-consuming dropdown.
+You can hide the HUD and keep reviewing with shortcuts. A small badge shows the current decision and rating. Turn it off under Settings → Appearance to show that status in the minimized button instead. If saving fails, it shows **Needs attention**; open the HUD for details.
 
-The compact HUD follows the system's light/dark appearance automatically. Its background defaults to **85% opacity**; **Settings → Appearance → HUD background opacity** adjusts it from 75–100%, saved locally across libraries/tabs. Text stays fully opaque. Reduced-transparency system preferences override the translucent background with an opaque surface where the browser supports that media query. These are appearance preferences, not edits to photos.
+| Key | Action |
+| --- | --- |
+| A / R | Accept / Reject; repeat to clear |
+| U | Clear the decision |
+| 1–5 | Set a rating; repeat to clear |
+| 0 | Clear the rating |
+| Shift+H | Hide or show the HUD |
+| h / k | Previous photo |
+| j / l | Next photo |
+| ? | Open settings |
 
-Review-decision checkboxes are optional. Checked decisions use OR; with none checked, any decision qualifies and only the rating checks narrow the matches. **Ratings only** clears the decision checks in one click. Rejected remains the initial selection. Empty rating checks still match nothing.
+Review and navigation shortcuts work while the HUD is hidden. They pause in Settings, comparison and typing fields. Left/Right and Escape keep their Google Photos behavior.
 
-Rating filters use exact checked values: checking 3 and 5 includes those ratings and excludes 4; checking Unrated includes zero/unset ratings. All are checked initially. Clearing every rating checkbox matches nothing and disables selection. Filters stay while navigating the page but reset on a full tab reload.
+## Pick up where you left off
 
-## Reuse a library for another round
+From the list/grid view, click **Resume review** to reopen the last photo you viewed in this local library, keeping its album context when available. Your place is saved automatically and survives browser restarts. This returns to your last viewed photo, whether reviewed or unreviewed. Clearing a round or deleting the library clears its resume point.
 
-The HUD dropdown and Settings → Review library list saved library names, including empty libraries created in this version. Existing names are discovered from stored reviews and account-slot choices. Choosing a name restores its own reviews immediately; New review library opens the creation form. These are local review libraries, not a Google Photos album picker.
+## Find and select matches
 
-For a fresh round without removing saved photo links, use Settings → Start another review round:
+1. Return to the Google Photos grid.
+2. Choose ratings and, optionally, review decisions. **Ratings only** removes the decision filter. No rating boxes checked means no matches.
+3. Click **Select matches & scroll**.
 
-1. Check the active library and reviewed-photo count.
-2. Click **Clear this round’s reviews**.
-3. Confirm the displayed count/name, or Cancel.
+The extension scrolls the current view, confirms selections and stops after at most two sweeps. It preserves unrelated selections. Missing or unsupported photos produce a **partial count**, not a success message; they may be in another album/view. Use **Stop** to end a scan early.
 
-Only that library’s Accept/Reject decisions and ratings reset to Unreviewed / no rating. Photo IDs/links, other libraries, opacity and older Lightroom data are kept. Google Photos and its current native selection are unchanged; clear that selection in Google Photos yourself when needed for a fresh selection round. The library is ready to review again without retyping its name.
+Check Google Photos’ selection before taking your next action.
 
-There is no automatic round history or Undo. Export a backup first to keep a record of the old round. Standard restore keeps newer entries, including a later round reset. If reviews change after confirmation was opened, the clear operation refuses the stale snapshot and asks you to check again. A failed storage write leaves the old reviews intact.
+## Compare two photos
 
-## If pinning still fails
+1. Open a photo and click **Pin A**.
+2. Navigate to another photo and click **Pin B**.
+3. Click **Compare** and choose **Side by side** or **Overlay**.
+4. In Overlay mode, click the image or the toggle button to show/hide B over A.
 
-Pinning accepts the exact HTTPS image host `photos.fife.usercontent.google.com`. Existing approved image sources are unchanged; arbitrary Google or lookalike domains are not added. **Copy pin details** remains available if another source fails.
+Pinned images stay in tab memory. Reloading, clearing pins or changing libraries releases them. If pinning fails, **Copy pin details** provides redacted diagnostics for a bug report.
 
-1. Apply this local update and retry Pin A/B.
-2. If it fails, click **Copy pin details**, then include the text in a bug report. If clipboard access is blocked, copy the selected read-only text shown in the HUD.
+## Manage libraries and settings
 
-The diagnostic includes only a reader marker, runtime version, failure category, source scheme/host/origin and pixel dimensions. Full URLs, paths, query strings, fragments, credentials, filenames, photo IDs and image payloads are excluded. Nothing is persisted or automatically sent anywhere. A new pin attempt hides the previous diagnostic controls. This lets us distinguish an unsupported source from an old script or failed temporary-image copy without guessing another host allowance.
+Click the settings icon in the HUD’s top-right corner.
 
-## Remove an old library
+- **Switch libraries:** choose a saved name from the dropdown; empty libraries are remembered.
+- **Start another round:** Clear this round’s reviews resets decisions and ratings but keeps photo links.
+- **Remove a library:** Delete library permanently removes its local reviews and links after confirmation.
+- **Back up:** Export reviews saves a local JSON file. Restore keeps newer entries, including later round resets. There is no automatic history or Undo.
+- **Appearance:** the HUD follows system light/dark mode. Background opacity is adjustable; text stays solid. The review badge is optional.
 
-Open Settings, choose the local library, then **Delete library…**. Check its name and total saved-link count, then confirm **Delete library permanently** or Cancel. This removes the library's local reviews, saved photo links, name and every account-slot binding that used it. Other libraries, appearance preferences, older Lightroom data and Google Photos remain unchanged.
+Library reset/removal does not change Google Photos or its current selection. Backup files contain private photo links: keep them private.
 
-The result reports how much library data was removed when Chrome supplies that count. Libraries store text metadata, not photo files. Deletion frees those records from extension storage; it does not remove photos or browser image caches. There is no Undo; export first if you need a backup. A changed confirmation is refused, and failed removal leaves records and library choices available.
+## Update
 
-After deletion, select another saved library or create one. Empty names remain reusable and a deliberately recreated name starts without the deleted records. The name catalogue now uses individual registration keys, migrating the old shared array without losing other empty libraries. Stale tabs cannot save into a library whose active binding was deleted.
+Replace the files in the same loaded folder with the newer source. Keep Developer mode on.
 
-## Settings and A/B comparison
+A HUD update button appears when a newer local version is detected. Click it to reload the extension and that tab. Manual refresh is also available in Settings. Older open tabs can recover through **Settings → Refresh this tab**.
 
-The SVG settings button at the HUD's top right opens a larger, solid settings panel. It contains the review-library chooser, appearance, keyboard help, backups and local updates. Closing it returns focus to the HUD.
+Saved reviews remain. Temporary pins, Google’s current selection and filter choices reset. Updates are local: the extension does not download new releases automatically.
 
-For comparison:
+## Privacy and limits
 
-1. Open an individual photo and click **Pin A**.
-2. Navigate to a second photo and click **Pin B**.
-3. Click **Compare**. Choose **Side by side** or **Overlay**.
-4. In Overlay, click the image or **Show B over A / Hide B** to alternate the pinned images. Each image is fitted without cropping; this is not automatic pixel alignment or a difference heatmap.
+Reviews use `chrome.storage.local`; images are not saved in review storage or backups. There are no analytics, photo uploads, private API calls or Google photo-deletion controls.
 
-Pinning uses one large, fully loaded image actually visible in the viewer. Same-origin browser-generated `blob:` images are copied into an owned in-tab Blob URL before navigation; this supports a reproduced source type rejected by v0.4.4. Offscreen preload images are ignored; overlapping ambiguous images are rejected. Unsupported rendering or expired image URLs require reopening and repinning the photo. The real Google Photos image adapter still needs live validation.
-
-Pinned images stay only in this tab's memory, using its normally rendered image URLs or an owned temporary copy of a same-origin Blob. Owned URLs are revoked on replacement, clear, library change/reset/deletion or page exit. They are not written to storage or backups and are cleared on page reload, changing libraries, or **Clear pinned images**. No canvas, file export, upload, private API or external image service is used. Only displayed same-origin Blob URLs are fetched from browser memory; ordinary HTTPS images are not fetched through this helper. Comparison can re-render the existing image URL through the browser's normal image loading.
-
-## Local memory and limits
-
-- Decisions, stars and photo links are stored in **extension-owned `chrome.storage.local`**, keyed by your named library and the photo ID from its web URL. Nothing is written to Google's metadata.
-- Standard library and album photo URL forms normalize to the same photo ID. Google's actual cross-view identity stability is **not guaranteed by a public API and remains unverified live**.
-- Multiple HUD tabs serialize updates through the extension worker, so editing a decision does not replace a concurrently saved star rating.
-- **Select matches & scroll** freezes the matching saved IDs, starts a scan of this view from the top, scrolls to trigger lazy loading and confirms readable checkboxes. It stops once all known saved targets are confirmed, after at most two complete scans of this view, or at the backup limits of 120 scroll steps / 2 minutes / 10,000 encountered IDs. Reaching a stable bottom retries from the top once; a second completed scan stops even if photos are missing, since those targets may be in another album/view. Ambiguous controls are reported unsupported; an unconfirmed click stops the scan rather than being retried. Stop, route changes and library changes interrupt the operation.
-- The result reports **confirmed N of M target matches**. Matches saved from a different album may be absent from this view: missing IDs produce a partial result, not success. When matching unknown Unrated/Unreviewed photos, the count covers encountered photos only, not a verified whole-library total. Existing unrelated selections are excluded from the target count and kept. Scrolling may leave you at a different position in the grid.
-- Selection is additive. A stopped/partial operation leaves already selected photos selected; the result states confirmed, existing, unsupported and unattempted counts.
-- Saved matches provide links for revisiting reviewed photos. The list shows at most the latest 100 matches; export includes all reviews in the chosen library.
-- No cloud/browser sync. Removing the extension or clearing its storage loses local reviews. Under **Settings → Local data & backup**, export JSON regularly. Restore merges a valid backup for the same library and keeps newer saved decisions. Backups include private photo links; keep them local.
-- Google account URL slots (`/u/0`, `/u/1`, etc.) are not permanent account identities. Check your named review library whenever switching accounts.
-
-**Verification:** 72 automated tests and syntax checks pass. Installed Chromium checks use synthetic photos and locally fulfilled pages. Live Google Photos layouts, account identity and selection behavior are not comprehensively verified; start with a small pilot. See VERIFICATION.md for coverage and limits.
-
-## Local updates
-
-**One-time bootstrap for v0.4.3:** use the older Settings → Apply local update (or Reload at chrome://extensions), then reload Google Photos once. This loads the new refresh control.
-
-After that, the SVG **refresh button in the HUD header** applies local files and automatically refreshes only the Google Photos tab where it was clicked. Reviews are already saved locally; the extension waits for queued review saves before reloading. **Tab-only comparison pins and Google's current selection are cleared by the page refresh.** Filters reset to their defaults; saved decisions, ratings, review library and opacity remain.
-
-The HUD checks its own local unpacked `manifest.json` when visible on startup/focus and once per minute while visible. The header update button is hidden initially, when up to date, and if checking fails. A newer numeric version reveals it with a version-specific accessible label. Manual same-version refresh stays in Settings. No update server, download, install or publication is involved. Developers must edit this same loaded folder and bump the manifest version for automatic detection. The button can also refresh same-version edits manually.
-
-Only local extension resources are readable by the version checker (`connect-src 'self'`); external network connections from extension pages remain blocked. A durable, expiring marker carries only the requesting tab ID across extension reload. Unrelated tabs are not automatically reloaded. Their older HUD context may be invalidated by the extension reload; the header button remains hidden because that old context cannot verify a newer version. Open Settings and use Refresh this tab to recover directly without the invalidated messaging API.
-
-Edit this same loaded folder, then apply the update. The old workspace and the new launcher both have an update button. The HUD also offers **Apply local update** under **Settings → Local data & backup**; it uses the same automatic extension-and-requesting-tab refresh flow. Developer mode must stay on. Do not reinstall or change the loaded path.
-
-The earlier Lightroom decisions remain under their original storage key and are not migrated into Google photo reviews. Earlier adapter sources/tests are retained as historical compatibility fixtures; the active manifest requests only Google Photos host access and loads no Lightroom script.
+Google Photos layouts and web IDs can change. Start with a small set: synthetic browser tests do not guarantee every live account or view. See [verification notes](VERIFICATION.md) for coverage and limits.
 
 ## Development
 
-Plain JavaScript MV3 extension; no build or dev server. `npm test` and `npm run check`. `hud-core.js` holds identity/validation, `hud-store.js` serializes durable writes, `hud.js` renders the isolated Shadow DOM HUD, and `background.js` opens it and handles local saves. No new permission was added; Lightroom host access was removed.
+Requires Node.js 24 or later:
 
-## Contributing and publication
+```sh
+npm ci
+npm test
+npm run check
+```
 
-Use synthetic photos, accounts and IDs in tests, screenshots and issues. Do not commit review backups, browser profiles, authentication state, real photo links or private handovers. Local review storage is separate from the source folder; source publication does not require exporting that storage.
-
-The project includes ignore rules for common local artifacts. Inspect files before committing to ensure no private data is included.
+**76 tests** and syntax checks pass. See [PRODUCT.md](PRODUCT.md) for architecture. Use synthetic data in tests, screenshots and issues; never commit browser profiles, authentication state or review backups.
 
 ## License
 
